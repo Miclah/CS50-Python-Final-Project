@@ -22,7 +22,7 @@ def game_selector():
         print("You did not input a number!")
         pass
     if choice == 1:
-        game_manager(input("Enter the type of game you want to play(simple quiz | hard quiz): ").strip())
+        game_manager(input("Enter the type of game you want to play(simple quiz | hard quiz | multiple choice): ").strip())
     elif choice == 2:
         sys.exit()
     else:
@@ -37,11 +37,27 @@ def game_manager(game_type):
     if re.search("^(h|ha|har|hard)$", game_type):
         print("Hard quiz selected")
         hard_game()
+    if re.search("^(m|mu|mul|mult|multp|multi|multipl|multiple)$", game_type):
+        print("Multiple choice quiz selected")
+        multiple_choice_game()
         
 def simple_game():
+    global COUNTER
+    questions = read_sf("simple_questions.csv")
+    while(len(questions) > 0):
+        question = questions.pop(0)
+        print(f"Question: {question["question"]}")
+        answer = input("Enter your answer: ").strip()
+        if answer == question["answer"]:
+            print("Correct!")
+            COUNTER = COUNTER + 1
+        else:
+            print("Incorrect!")
     
 def hard_game():
-
+    print("Hard game selected")
+def multiple_choice_game():
+    print("Multiple choice game selected")
 def read_sf(file_name):
     question = []
     try:
@@ -79,8 +95,7 @@ def ask_question():
             print("You cannot end without finishing the question and answer set!")
             continue
         questions_answers.append({"question": user_question, "answer": user_answer})
-    final_set = remove_duplicates(questions_answers)
-    return final_set
+    return remove_duplicates(questions_answers) 
 
 def remove_duplicates(data):
     return [dict(t) for t in set(tuple(d.items()) for d in data)]
