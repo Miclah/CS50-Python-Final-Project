@@ -1,13 +1,11 @@
 # TODO: 1. Quiz, retry, delete, write 
 #           answers to a file
 #       2. Timer, print out final score
-#       3. other functionality, mnultiple answers
+#       3. other functionality, mnultiple answers, game history!!(zapis do suboru a potom vypis cez kniznicu)
 
 import sys
 import re
 import csv
-
-COUNTER = 0
 
 def main():
    game_selector()
@@ -42,30 +40,49 @@ def game_manager(game_type):
         multiple_choice_game()
         
 def simple_game():
-    global COUNTER
+    counter = 0
     questions = read_sf("simple_questions.csv")
-    while(len(questions) > 0):
-        question = questions.pop(0)
-        print(f"Question: {question["question"]}")
-        answer = input("Enter your answer: ").strip()
-        if answer == question["answer"]:
-            print("Correct!")
-            COUNTER = COUNTER + 1
-        else:
-            print("Incorrect!")
+    while True:
+        while(len(questions) > 0):
+            simple_questions = questions.pop(0)
+            print(f"Question: {simple_questions['simple_questions']}")
+            answer = input("Enter your answer: ").strip()
+            if answer == simple_questions["answer"]:
+                print("Correct!")
+                counter += 1
+            else:
+                print("Incorrect!")
+        print(f"Your final score is: {counter} points!")
+        print("What would you like to do now?")
+        choice = input("1. Retry, 2. Quit: ").strip()
+        if re.search("^(r|re|ret|retry|1)$", choice):
+            questions = read_sf("simple_questions.csv")
+            counter = 0
+            continue
+        if re.search("^(q|qu|qui|quit|2)$", choice):
+            sys.exit()
     
 def hard_game():
     print("Hard game selected")
+    
 def multiple_choice_game():
     print("Multiple choice game selected")
-def read_sf(file_name):
-    question = []
+    
+def read_sf(file_name, difficulty):
+    simple_questions = []
+    hard_questions = []
     try:
         with open(file_name, 'r') as sfr:
             reader = csv.DictReader(sfr)
             for row in reader:
-                question.append({"question": row["question"], "answer": row["answer"]})
-            return question
+                if row["difficulty"] == "simple":
+                    simple_questions.append({"simple_questions": row["simple_questions"], "answer": row["answer"]})
+                else:
+                    hard_questions.append({"hard_questions": row["hard_questions"], "answer": row["answer"]})
+            if difficulty == "simple":
+                return simple_questions
+            else:
+                return hard_questions
     except FileNotFoundError:
         answer = input("File not found, would you like to create it?(yes, no): ").strip().lower()
         if answer == "yes":
@@ -74,27 +91,27 @@ def read_sf(file_name):
             sys.exit()
     
 
-def write_sf(file_name):
+def write_sf(file_name, difficulty):
     with open(file_name, "w", newline="") as sfw:
-        writer = csv.DictWriter(sfw, fieldnames=["question", "answer"])
+        writer = csv.DictWriter(sfw, fieldnames=["simple_questions", "answer", "difficulty"])
         writer.writeheader()
-        for question in ask_question():
-            writer.writerow({"question": question["question"], "answer": question["answer"]})
+        for simple_questions in ask_question():
+            writer.writerow({"simple_questions": simple_questions["simple_questions"], "answer": simple_questions["answer"]})
          
     
 def ask_question():
     print("\nYou will now be tasked with writing the questions and the answers. If you wish to stop type end.")
-    print("Do not end without finishing the question and answer set!\n")
+    print("Do not end without finishing the simple_questions and answer set!\n")
     questions_answers = []
     while True:
-        user_question = input("Enter a question: ").strip()
+        user_question = input("Enter a simple_questions: ").strip()
         if user_question == "end":
             break
         user_answer = input("Enter the answer: ").strip()
         if user_answer == "end":
-            print("You cannot end without finishing the question and answer set!")
+            print("You cannot end without finishing the simple_questions and answer set!")
             continue
-        questions_answers.append({"question": user_question, "answer": user_answer})
+        questions_answers.append({"simple_questions": user_question, "answer": user_answer})
     return remove_duplicates(questions_answers) 
 
 def remove_duplicates(data):
