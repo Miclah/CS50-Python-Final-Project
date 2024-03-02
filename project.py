@@ -6,6 +6,7 @@
 import sys
 import re
 import csv
+import tabulate
 
 def main():
    game_selector()
@@ -41,7 +42,7 @@ def game_manager(game_type):
         
 def simple_game():
     counter = 0
-    questions = read_sf("simple_questions.csv")
+    questions = read_sf("simple_questions.csv", "simple")
     while True:
         while(len(questions) > 0):
             simple_questions = questions.pop(0)
@@ -54,13 +55,16 @@ def simple_game():
                 print("Incorrect!")
         print(f"Your final score is: {counter} points!")
         print("What would you like to do now?")
-        choice = input("1. Retry, 2. Quit: ").strip()
+        choice = input("1. Retry, 2. New questions, 3. Add questions, 4. Quit: ").strip()
         if re.search("^(r|re|ret|retry|1)$", choice):
             questions = read_sf("simple_questions.csv")
             counter = 0
             continue
         if re.search("^(q|qu|qui|quit|2)$", choice):
             sys.exit()
+        if re.search("^(n|ne|new|new q|new qu|new que|new ques|new quest|new questi|new questio|new question|new questions|3)$", choice):
+            write_sf("simple_questions.csv","w", "simple")
+            continue
     
 def hard_game():
     print("Hard game selected")
@@ -91,8 +95,8 @@ def read_sf(file_name, difficulty):
             sys.exit()
     
 
-def write_sf(file_name, difficulty):
-    with open(file_name, "w", newline="") as sfw:
+def write_sf(file_name, difficulty, type):
+    with open(file_name, type, newline="") as sfw:
         writer = csv.DictWriter(sfw, fieldnames=["simple_questions", "answer", "difficulty"])
         writer.writeheader()
         for simple_questions in ask_question():
@@ -116,6 +120,9 @@ def ask_question():
 
 def remove_duplicates(data):
     return [dict(t) for t in set(tuple(d.items()) for d in data)]
+
+def print_table(data):
+    print(tabulate.tabulate(data, headers="keys"))
     
 if __name__ == "__main__":
     main()
