@@ -42,7 +42,7 @@ def game_manager(game_type):
         
 def simple_game():
     counter = 0
-    questions = read_sf("simple_questions.csv", "simple")
+    questions = read_sf("questions.csv", "simple")
     while True:
         while(len(questions) > 0):
             simple_questions = questions.pop(0)
@@ -63,7 +63,7 @@ def simple_game():
         if re.search("^(q|qu|qui|quit|2)$", choice):
             sys.exit()
         if re.search("^(n|ne|new|new q|new qu|new que|new ques|new quest|new questi|new questio|new question|new questions|3)$", choice):
-            write_sf("simple_questions.csv","w", "simple")
+            write_sf("questions.csv","w", "simple")
             continue
     
 def hard_game():
@@ -90,33 +90,39 @@ def read_sf(file_name, difficulty):
     except FileNotFoundError:
         answer = input("File not found, would you like to create it?(yes, no): ").strip().lower()
         if answer == "yes":
-            write_sf(file_name)
+            diff = input("Simple or hard questions?(simple, hard): ").strip().lower()
+            if diff == "simple":
+                write_sf(file_name, "simple", "w")
+            else:
+                write_sf(file_name, "hard", "w")
         else:
             sys.exit()
     
 
 def write_sf(file_name, difficulty, type):
     with open(file_name, type, newline="") as sfw:
-        writer = csv.DictWriter(sfw, fieldnames=["simple_questions", "answer", "difficulty"])
-        writer.writeheader()
-        for simple_questions in ask_question():
-            writer.writerow({"simple_questions": simple_questions["simple_questions"], "answer": simple_questions["answer"]})
+        writer = csv.DictWriter(sfw, fieldnames=["question", "answer", "difficulty"])
+        if sfw.tell() == 0:
+            writer.writeheader()
+        for question in ask_question():
+            writer.writerow({"question": question["question"], "answer": question["answer"], "difficulty": question[f"{difficulty}"]})
          
     
 def ask_question():
-    print("\nYou will now be tasked with writing the questions and the answers. If you wish to stop type end.")
+    print("\nYou will now be tasked with writing the questions, answers and difficulty. If you wish to stop type end.")
     print("Do not end without finishing the simple_questions and answer set!\n")
-    questions_answers = []
+    questions = []
     while True:
-        user_question = input("Enter a simple_questions: ").strip()
+        user_question = input("Enter a question: ").strip()
         if user_question == "end":
             break
         user_answer = input("Enter the answer: ").strip()
-        if user_answer == "end":
-            print("You cannot end without finishing the simple_questions and answer set!")
+        user_difficulty = input("Enter the difficulty(simple, hard): ").strip()
+        if user_answer == "end" or user_difficulty == "end":
+            print("You cannot end without finishing the question and answer set!")
             continue
-        questions_answers.append({"simple_questions": user_question, "answer": user_answer})
-    return remove_duplicates(questions_answers) 
+        questions.append({"simple_questions": user_question, "answer": user_answer, "difficulty": user_difficulty})
+    return remove_duplicates(questions) 
 
 def remove_duplicates(data):
     return [dict(t) for t in set(tuple(d.items()) for d in data)]
